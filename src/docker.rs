@@ -17,7 +17,15 @@ const DOCKER: &str = "docker";
 const PODMAN: &str = "podman";
 
 fn get_container_engine() -> Result<std::path::PathBuf> {
-    which::which(DOCKER).or_else(|_| which::which(PODMAN)).map_err(|e| e.into())
+    let container_engine = env::var("CROSS_CONTAINER_ENGINE").unwrap_or_default();
+
+    if container_engine.is_empty() {
+        which::which(DOCKER)
+            .or_else(|_| which::which(PODMAN))
+            .map_err(|e| e.into())
+    } else {
+        which::which(container_engine).map_err(|e| e.into())
+    }
 }
 
 pub fn docker_command(subcommand: &str) -> Result<Command> {
@@ -95,7 +103,7 @@ pub fn run(target: &Target,
 
     cmd.args(args);
 
-    let runner = None;
+    let mut runner = None;
 
     let mut docker = docker_command("run")?;
 
@@ -132,6 +140,8 @@ pub fn run(target: &Target,
                 docker.args(&["-e", &format!("{}={}", var, mount_path.display())]);
             }
         }
+
+        runner = toml.runner(target)?;
     }
 
     docker.args(&["-e", "PKG_CONFIG_ALLOW_CROSS=1"]);
@@ -141,7 +151,14 @@ pub fn run(target: &Target,
     // We need to specify the user for Docker, but not for Podman.
     if let Ok(ce) = get_container_engine() {
         if ce.ends_with(DOCKER) {
-            docker.args(&["--user", &format!("{}:{}", id::user(), id::group())]);
+            docker.args(&[
+                "--user",
+                &format!(
+                    "{}:{}",
+                    env::var("CROSS_CONTAINER_UID").unwrap_or(id::user().to_string()),
+                    env::var("CROSS_CONTAINER_GID").unwrap_or(id::group().to_string()),
+                ),
+            ]);
         }
     }
 

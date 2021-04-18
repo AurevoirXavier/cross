@@ -43,13 +43,12 @@ This project is developed and maintained by the [Tools team][team].
 One of these container engines is required. If both are installed, `cross` will
 default to `docker`.
 
-- [Docker](https://www.docker.com/). Note that on Linux non-sudo users need to be in the
-  `docker` group. Read the official [post-installation steps][post]. Requires version
-  1.24 or later.
+- [Docker]. Note that on Linux non-sudo users need to be in the `docker` group.
+  Read the official [post-installation steps][post]. Requires version 1.24 or later.
 
 [post]: https://docs.docker.com/install/linux/linux-postinstall/
 
-- [Podman](https://podman.io). Requires version 1.6.3 or later.
+- [Podman]. Requires version 1.6.3 or later.
 
 ## Installation
 
@@ -112,7 +111,7 @@ This way you won't have to figure out how to install a cross C toolchain in your
 custom image. Example below:
 
 ``` Dockerfile
-FROM rustembedded/cross:aarch64-unknown-linux-gnu-0.1.16
+FROM rustembedded/cross:aarch64-unknown-linux-gnu-0.2.1
 
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
@@ -165,6 +164,15 @@ overlayfs. The parent must not be stopped before the child container, as the
 overlayfs can not be unmounted correctly by Docker if the child container still
 accesses it.
 
+
+### Explicitly choose the container engine
+
+By default, `cross` tries to use [Docker] or [Podman], in that order.
+If you want to choose a container engine explicitly, you can set the
+binary name (or path) using the `CROSS_CONTAINER_ENGINE`
+environment variable.
+
+For example in case you want use [Podman], you can set `CROSS_CONTAINER_ENGINE=podman`.
 
 ### Passing environment variables into the build environment
 
@@ -267,7 +275,9 @@ terminate.
 | `armv7-unknown-linux-musleabihf`     | 1.1.20 | 6.3.0   |     | 4.1.0 |   ✓    |
 | `i586-unknown-linux-gnu`             | 2.23   | 5.3.1   | ✓   | N/A   |   ✓    |
 | `i586-unknown-linux-musl`            | 1.1.20 | 6.3.0   |     | N/A   |   ✓    |
+| `i686-unknown-freebsd` [4]           | 12.1   | 6.4.0   |     | N/A   |   ✓    |
 | `i686-linux-android` [2]             | N/A    | 4.9     | ✓   | N/A   |   ✓    |
+| `i686-pc-windows-gnu`                | N/A    | 7.3.0   | ✓   | N/A   |   ✓    |
 | `i686-unknown-linux-gnu`             | 2.15   | 4.6.2   | ✓   | N/A   |   ✓    |
 | `i686-unknown-linux-musl`            | 1.1.20 | 6.3.0   |     | N/A   |   ✓    |
 | `mips-unknown-linux-gnu`             | 2.23   | 5.3.1   | ✓   | 4.1.0 |   ✓    |
@@ -277,9 +287,11 @@ terminate.
 | `mipsel-unknown-linux-gnu`           | 2.23   | 5.3.1   | ✓   | 4.1.0 |   ✓    |
 | `mipsel-unknown-linux-musl`          | 1.1.20 | 6.3.0   | ✓   | 4.1.0 |   ✓    |
 | `powerpc-unknown-linux-gnu`          | 2.19   | 4.8.2   | ✓   | 3.0.1 |   ✓    |
+| `powerpc64-unknown-linux-gnu`        | 2.31   | 10.2.0  | ✓   | 3.0.1 |   ✓    |
 | `powerpc64le-unknown-linux-gnu`      | 2.19   | 4.8.2   | ✓   | 3.0.1 |   ✓    |
 | `riscv64gc-unknown-linux-gnu`        | 2.27   | 7.5.0   | ✓   | 4.2.0 |   ✓    |
 | `s390x-unknown-linux-gnu`            | 2.23   | 5.3.1   | ✓   | 4.1.0 |        |
+| `sparc64-unknown-linux-gnu`          | 2.31   | 10.2.0  | ✓   | 4.2.0 |   ✓    |
 | `sparcv9-sun-solaris` [4]            | 2.11   | 5.3.0   | ✓   | N/A   |        |
 | `thumbv6m-none-eabi` [5]             | 2.2.0  | 5.3.1   |     | N/A   |        |
 | `thumbv7em-none-eabi` [5]            | 2.2.0  | 5.3.1   |     | N/A   |        |
@@ -289,6 +301,7 @@ terminate.
 | `x86_64-linux-android` [2]           | N/A    | 4.9     | ✓   | N/A   |   ✓    |
 | `x86_64-pc-windows-gnu`              | N/A    | 7.3.0   | ✓   | N/A   |   ✓    |
 | `x86_64-sun-solaris` [4]             | 2.11   | 5.3.0   | ✓   | N/A   |        |
+| `x86_64-unknown-freebsd` [4]         | 12.1   | 6.4.0   |     | N/A   |   ✓    |
 | `x86_64-unknown-dragonfly` [4] [3]   | 4.6.0  | 5.3.0   | ✓   | N/A   |        |
 | `x86_64-unknown-linux-gnu`           | 2.15   | 4.6.2   | ✓   | N/A   |   ✓    |
 | `x86_64-unknown-linux-musl`          | 1.1.20 | 6.3.0   |     | N/A   |   ✓    |
@@ -371,3 +384,5 @@ to intervene to uphold that code of conduct.
 
 [CoC]: CODE_OF_CONDUCT.md
 [team]: https://github.com/rust-embedded/wg#the-tools-team
+[Docker]: https://www.docker.com
+[Podman]: https://podman.io
